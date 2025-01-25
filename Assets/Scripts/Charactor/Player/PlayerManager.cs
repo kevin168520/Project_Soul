@@ -20,6 +20,11 @@ namespace Kevin
         {
             base.Update();
 
+            // If do not own this gameobject, do not ctrl or edit it
+            if (!IsOwner)
+                return;
+            
+
             // handle Movement
             playerLocomotionManager.HandleAllMovement();
         }

@@ -7,7 +7,10 @@ namespace Kevin
 {
     public class CharactorLocomotionManager : MonoBehaviour
     {
+        protected virtual void Awake()
+        {
 
+        }
     }
 
 }

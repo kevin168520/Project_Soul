@@ -7,17 +7,20 @@ namespace Kevin
 {
     public class PlayerInputManager : MonoBehaviour
     {
-        public static PlayerInputManager Instance;
+        public static PlayerInputManager instance;
 
         PlayerControls playControls;
 
-        [SerializeField] Vector2 movement;
+        [SerializeField] Vector2 movementInput;
+        public float verticalInput;
+        public float horizontalInput;
+        public float moveAmount;
 
         private void Awake()
         {
-            if (Instance == null)
+            if (instance == null)
             {
-                Instance = this;
+                instance = this;
             }
             else
             {
@@ -32,7 +35,7 @@ namespace Kevin
 
             SceneManager.activeSceneChanged += OnSceneChange;
 
-            Instance.enabled = false;
+            instance.enabled = false;
 
         }
 
@@ -42,7 +45,7 @@ namespace Kevin
             {
                 playControls = new PlayerControls();
 
-                playControls.PlayerMovement.Movement.performed += i => movement = i.ReadValue<Vector2>();
+                playControls.PlayerMovement.Movement.performed += i => movementInput = i.ReadValue<Vector2>();
             }
 
             playControls.Enable();
@@ -53,16 +56,56 @@ namespace Kevin
             SceneManager.activeSceneChanged -= OnSceneChange;
         }
 
+        private void Update()
+        {
+            HandleMovementInput();
+        }
+
+        // If minimize or lower the window ,stop adjusting inputs
+        private void OnApplicationFocus(bool focus)
+        {
+            if (enabled)
+            {
+                if (focus)
+                {
+                    playControls.Enable();
+                }
+                else
+                {
+                    playControls.Disable();
+                }
+            }
+        }
+
 
         private void OnSceneChange(Scene oldScene, Scene newScene)
         {
             if (newScene.buildIndex == WorldSaveGameManager.instance.GetWorldSceneIndex())
             {
-                Instance.enabled = true;
+                instance.enabled = true;
             }
             else
             {
-                Instance.enabled = false;
+                instance.enabled = false;
+            }
+        }
+
+        private void HandleMovementInput()
+        {
+            verticalInput = movementInput.y;
+            horizontalInput = movementInput.x;
+
+            // Return the absolute number (Meaning number without the negative sign , so always postive)
+            moveAmount = Mathf.Clamp01(MathF.Abs(verticalInput) + MathF.Abs(horizontalInput));
+
+            // Clamp the values , so they are 0 , 0.5 or 1 
+            if (moveAmount <= 0.5 && moveAmount > 0)
+            {
+                moveAmount = 0.5f;
+            }
+            else if (moveAmount <= 0.5 && moveAmount <= 1)
+            {
+                moveAmount = 1;
             }
         }
     }
