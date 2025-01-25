@@ -28,6 +28,25 @@ namespace Kevin
             // handle Movement
             playerLocomotionManager.HandleAllMovement();
         }
+
+        protected override void LateUpdate()
+        {
+            if (!IsOwner)
+                return;
+            base.LateUpdate();
+
+            PlayerCamera.instance.HandAllCameraActions();
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (IsOwner)
+            {
+                PlayerCamera.instance.player = this;
+            }
+        }
     }
 
 }

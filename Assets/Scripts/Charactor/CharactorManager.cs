@@ -43,6 +43,11 @@ namespace Kevin
                     characterNetworkManager.networkRotationSmoothTime);
             }
         }
+
+        protected virtual void LateUpdate()
+        {
+
+        }
     }
 }
 
