@@ -11,10 +11,16 @@ namespace Kevin
 
         PlayerControls playControls;
 
+        [Header("Player Movement Input")]
         [SerializeField] Vector2 movementInput;
         public float verticalInput;
         public float horizontalInput;
         public float moveAmount;
+
+        [Header("Camera Movement Input")]
+        [SerializeField] Vector2 cameraInput;
+        public float cameraVerticalInput;
+        public float cameraHorizontalInput;
 
         private void Awake()
         {
@@ -46,6 +52,7 @@ namespace Kevin
                 playControls = new PlayerControls();
 
                 playControls.PlayerMovement.Movement.performed += i => movementInput = i.ReadValue<Vector2>();
+                playControls.PlayerCamera.Movement.performed += i => cameraInput = i.ReadValue<Vector2>();
             }
 
             playControls.Enable();
@@ -58,7 +65,8 @@ namespace Kevin
 
         private void Update()
         {
-            HandleMovementInput();
+            HandlePlayerMovementInput();
+            HandleCameraMovementInput();
         }
 
         // If minimize or lower the window ,stop adjusting inputs
@@ -90,7 +98,7 @@ namespace Kevin
             }
         }
 
-        private void HandleMovementInput()
+        private void HandlePlayerMovementInput()
         {
             verticalInput = movementInput.y;
             horizontalInput = movementInput.x;
@@ -107,6 +115,12 @@ namespace Kevin
             {
                 moveAmount = 1;
             }
+        }
+
+        private void HandleCameraMovementInput()
+        {
+            cameraVerticalInput = cameraInput.y;
+            cameraHorizontalInput = cameraInput.x;
         }
     }
 

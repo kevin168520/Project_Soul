@@ -145,6 +145,7 @@ MonoBehaviour:
   moveAmount: 0
   walkingSpeed: 2
   runningSpeed: 5
+  rotationSpeed: 15
 --- !u!143 &5691126522525885344
 CharacterController:
   m_ObjectHideFlags: 0
@@ -164,7 +165,7 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 2
+  m_Height: 1.7
   m_Radius: 0.25
   m_SlopeLimit: 45
   m_StepOffset: 0.3
@@ -185,5 +186,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   networkPosition:
     m_InternalValue: {x: 0, y: 0, z: 0}
+  networkRotation:
+    m_InternalValue: {x: 0, y: 0, z: 0, w: 1}
   networkPositionVelocity: {x: 0, y: 0, z: 0}
   networkPositionSmoothTime: 0.1
+  networkRotationSmoothTime: 0.1

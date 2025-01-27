@@ -69,8 +69,8 @@ namespace Kevin
         private void HandelRotation()
         {
             targetRotationDirection = Vector3.zero;
-            targetRotationDirection = PlayerCamera.instance.CameraObject.transform.forward * verticalMovement;
-            targetRotationDirection = targetRotationDirection + PlayerCamera.instance.CameraObject.transform.right * horizontalMovement;
+            targetRotationDirection = PlayerCamera.instance.cameraObject.transform.forward * verticalMovement;
+            targetRotationDirection = targetRotationDirection + PlayerCamera.instance.cameraObject.transform.right * horizontalMovement;
             targetRotationDirection.Normalize();
             targetRotationDirection.y = 0;
 

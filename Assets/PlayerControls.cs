@@ -41,7 +41,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": ""LeftStick"",
                     ""id"": ""2853392e-d98a-45ab-8444-b0ad67e5d133"",
-                    ""path"": ""2DVector"",
+                    ""path"": ""2DVector(mode=1)"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -94,6 +94,78 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 }
             ]
+        },
+        {
+            ""name"": ""PlayerCamera"",
+            ""id"": ""313f4bb8-dd1c-4f29-8cd4-a3a3250e9951"",
+            ""actions"": [
+                {
+                    ""name"": ""Movement"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""c6177ed0-da5e-4b61-9d5f-0fbee56cd6bb"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": ""Mouse"",
+                    ""id"": ""9686ffad-9315-494b-be56-874f4e52894b"",
+                    ""path"": ""2DVector(mode=2)"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""4cf65fcd-e8f1-468f-bebf-59146cbf40f3"",
+                    ""path"": ""<Mouse>/delta/up"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""5975165d-4266-4582-bc12-ed44350d5e6a"",
+                    ""path"": ""<Mouse>/delta/down"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""fbca72a7-51e0-4ff3-a7db-e979f2ded4d0"",
+                    ""path"": ""<Mouse>/delta/left"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""a4230d99-3da0-45e8-857f-01affdcec56f"",
+                    ""path"": ""<Mouse>/delta/right"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -101,11 +173,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         // PlayerMovement
         m_PlayerMovement = asset.FindActionMap("PlayerMovement", throwIfNotFound: true);
         m_PlayerMovement_Movement = m_PlayerMovement.FindAction("Movement", throwIfNotFound: true);
+        // PlayerCamera
+        m_PlayerCamera = asset.FindActionMap("PlayerCamera", throwIfNotFound: true);
+        m_PlayerCamera_Movement = m_PlayerCamera.FindAction("Movement", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
     {
         UnityEngine.Debug.Assert(!m_PlayerMovement.enabled, "This will cause a leak and performance issues, PlayerControls.PlayerMovement.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_PlayerCamera.enabled, "This will cause a leak and performance issues, PlayerControls.PlayerCamera.Disable() has not been called.");
     }
 
     public void Dispose()
@@ -209,7 +285,57 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         }
     }
     public PlayerMovementActions @PlayerMovement => new PlayerMovementActions(this);
+
+    // PlayerCamera
+    private readonly InputActionMap m_PlayerCamera;
+    private List<IPlayerCameraActions> m_PlayerCameraActionsCallbackInterfaces = new List<IPlayerCameraActions>();
+    private readonly InputAction m_PlayerCamera_Movement;
+    public struct PlayerCameraActions
+    {
+        private @PlayerControls m_Wrapper;
+        public PlayerCameraActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Movement => m_Wrapper.m_PlayerCamera_Movement;
+        public InputActionMap Get() { return m_Wrapper.m_PlayerCamera; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(PlayerCameraActions set) { return set.Get(); }
+        public void AddCallbacks(IPlayerCameraActions instance)
+        {
+            if (instance == null || m_Wrapper.m_PlayerCameraActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_PlayerCameraActionsCallbackInterfaces.Add(instance);
+            @Movement.started += instance.OnMovement;
+            @Movement.performed += instance.OnMovement;
+            @Movement.canceled += instance.OnMovement;
+        }
+
+        private void UnregisterCallbacks(IPlayerCameraActions instance)
+        {
+            @Movement.started -= instance.OnMovement;
+            @Movement.performed -= instance.OnMovement;
+            @Movement.canceled -= instance.OnMovement;
+        }
+
+        public void RemoveCallbacks(IPlayerCameraActions instance)
+        {
+            if (m_Wrapper.m_PlayerCameraActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IPlayerCameraActions instance)
+        {
+            foreach (var item in m_Wrapper.m_PlayerCameraActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_PlayerCameraActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public PlayerCameraActions @PlayerCamera => new PlayerCameraActions(this);
     public interface IPlayerMovementActions
+    {
+        void OnMovement(InputAction.CallbackContext context);
+    }
+    public interface IPlayerCameraActions
     {
         void OnMovement(InputAction.CallbackContext context);
     }
